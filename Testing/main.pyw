@@ -122,6 +122,7 @@ def txt_to_steg_code(plaintext):
 
 
 def image_reading(filename):
+    file_extension = filename[-3:]
     image = Image.open(filename)
     width, height = image.size
     print("width: " + (str(width)))
@@ -129,16 +130,24 @@ def image_reading(filename):
     redarray = []
     greenarray = []
     bluearray = []
+    if file_extension == "png":  # will work for png with alpha channel
+        image.putalpha(0)  # adds alpha channel in case it is png without alpha channel, should replace existing
     for heightCount in range(height):
         for widthCount in range(width):
             if widthCount == 0:
                 red_row = []
                 green_row = []
                 blue_row = []
-            red, green, blue = image.getpixel((widthCount, heightCount))
-            red_row.append(red)
-            green_row.append(green)
-            blue_row.append(blue)
+            if file_extension == "png":  # will work for png with alpha channel
+                red, green, blue, alpha = image.getpixel((widthCount, heightCount))
+                red_row.append(red)
+                green_row.append(green)
+                blue_row.append(blue)
+            else:
+                red, green, blue = image.getpixel((widthCount, heightCount))
+                red_row.append(red)
+                green_row.append(green)
+                blue_row.append(blue)
 
         redarray.append(red_row)
         greenarray.append(green_row)
@@ -168,7 +177,7 @@ def steg_channel(zero_channel, steg_list, down_counter, width, height, counter):
 
 
 def encode():
-    start_image = str(input("enter a .bmp file to encode.\n"))
+    start_image = str(input("enter a .bmp or .png file to encode.\n"))
     redchan, greenchan, bluechan, width, height = image_reading(start_image)
     steg_list = txt_to_steg_code(str(input("enter the message to encode into the image\nDO NOT use the enter key or "
                                            "paste anything with line breaks or new lines,\nonly the first paragraph "
@@ -201,7 +210,7 @@ def steg_decode(long_steg_list):
 
 
 def decode():
-    start_image = str(input("enter a .bmp file to decode.\n"))
+    start_image = str(input("enter a .bmp or .png file to decode.\n"))
     redchan, greenchan, bluechan, width, height = image_reading(start_image)
     encoded_message = lsb_list(redchan) + lsb_list(greenchan) + lsb_list(bluechan)
     separator = "EOFEOFEOFEOFEOF"
