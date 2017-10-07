@@ -16,7 +16,6 @@ def write_image(start_image, red, green, blue):
 def lsb_list(channel):
     bit_list = []
     zero_num = 0
-    temp_num = 0
     for row in channel:
         for value in row:
 
@@ -31,14 +30,12 @@ def lsb_list(channel):
             else:
                 zero_num += 2
             bit_list.append(zero_num)
-            temp_num = 0
             zero_num = 0
     return bit_list
 
 
 def return_two_lsbs_zeroed(non_zero_list, width, height):
     zero_list = []
-    temp_num = 0
     zero_num = 0
     for li in non_zero_list:
         for number in li:
@@ -53,7 +50,6 @@ def return_two_lsbs_zeroed(non_zero_list, width, height):
             else:
                 zero_num += 2
             zero_list.append(number - zero_num)
-            temp_num = 0
             zero_num = 0
     zero_list_nested = []
     zero_row = []
@@ -234,4 +230,3 @@ while option != "quit":
 
 print("Program quitting")
 print("Goodbye!")
-
