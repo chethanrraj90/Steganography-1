@@ -106,7 +106,7 @@ def byte_to_quad_bit_pair(byte):  # splits a byte into four pairs of bits - thes
 
 
 def txt_to_steg_code(plaintext):  # Takes the message to be encoded and returns code for encoding
-    plaintext = plaintext + "EOFEOFEOFEOFEOF" # This tells the program when to stop when reading the message,
+    plaintext = plaintext + "EOFEOFEOFEOFEOF"  # This tells the program when to stop when reading the message,
     # otherwise gunk comes out
     plain_list = []  # To store numerical value for every character in text in a list
     pairs_list_dec = []  # To store base 10 values in lists of four for each character, therefore separating each
