@@ -263,7 +263,7 @@ def decode():
 
 def make_file_from_steg_code(encoded_file, extension, destination_file):
     length = len(encoded_file)
-    byte_list = [32,32,32]
+    byte_list = []
     for index in range(0, (length - 3), 4):  # Each character is stored across four pairs of bits, therefore
         # incrementing in fours
 
@@ -281,7 +281,7 @@ def make_file_from_steg_code(encoded_file, extension, destination_file):
     str = str.split(separator, 1)[0]
     eof_point = len(str)
     byte_list = byte_list[:eof_point]
-    filename = ""
+    filename = "decoded___"
     filename += destination_file[:-4]
     filename += extension
     with open(filename, "bw+") as f:
