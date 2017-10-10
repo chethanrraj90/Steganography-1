@@ -182,9 +182,15 @@ def steg_channel(zero_channel, steg_list, down_counter, width, height, counter):
 def encode():
     start_image = str(input("enter a .bmp or .png file to encode.\n"))
     redchan, greenchan, bluechan, width, height = image_reading(start_image)
-    steg_list = txt_to_steg_code(str(input("enter the message to encode into the image\nDO NOT use the enter key or "
-                                           "paste anything with line breaks or new lines,\nonly the first paragraph "
-                                           "will be encoded.\n")))
+    data_to_be_hidden = str(input("Would you like to hide a message or a file?\n 'message' or 'file'\n"))
+    if data_to_be_hidden == "message":
+        steg_list = txt_to_steg_code(str(input("enter the message to encode into the image\nDO NOT use the enter key or "
+                                               "paste anything with line breaks or new lines,\nonly the first paragraph "
+                                               "will be encoded.\n")))
+    elif data_to_be_hidden == "file":
+        secret_file = str(input("Please enter a file path for the file you wish to hide:\n"))
+        with open(secret_file, "rb") as f:
+            steg_list = file_to_steg_code(secret_file, f)
     # Remove the two least significant bits from every pixel
     zero_red = return_two_lsbs_zeroed(redchan, width, height)
     zero_blue = return_two_lsbs_zeroed(bluechan, width, height)
@@ -197,6 +203,26 @@ def encode():
     write_image(start_image, steg_red, steg_green, steg_blue)
 
     print("Done!!\n\n\n")
+
+
+def file_to_steg_code(filename, file_content):
+    steg_list = []
+    bit_pair_list = []
+    byte = file_content.read(1)
+    while byte:
+        byte_base_10 = ord(byte)
+        bit_pairs = byte_to_quad_bit_pair(byte_base_10)
+        bit_pair_list.append(bit_pairs)
+        byte = file_content.read(1)
+    for char in separator:
+        byte_base_10 = ord(char)
+        bit_pairs = byte_to_quad_bit_pair(byte_base_10)
+        bit_pair_list.append(bit_pairs)
+    for item in bit_pair_list:
+        for subItem in item:
+            steg_list.append(subItem)
+
+    return steg_list
 
 
 def steg_decode(long_steg_list):
@@ -217,16 +243,53 @@ def steg_decode(long_steg_list):
 
 def decode():
     start_image = str(input("enter a .bmp or .png file to decode.\n"))
+    message_format = str(input("Is the hidden data a message or a file?\n'message'\tor\t'file'\n"))
+
     redchan, greenchan, bluechan, width, height = image_reading(start_image)
     encoded_message = lsb_list(redchan) + lsb_list(greenchan) + lsb_list(bluechan)  # Reads encoded message into
-    # plaintext
+    # least significant bit lists
     separator = "EOFEOFEOFEOFEOF"  # Same separator as encoded with
+    if message_format == "message":
+        decoded_message = str(steg_decode(encoded_message))  # takes LSB list and returns plaintext
+        decoded_message = decoded_message.split(separator, 1)[0]  # Uses separator to split decrypted text from junk
+        # output
+        print("the encoded message was:\n" + decoded_message)
 
-    decoded_message = str(steg_decode(encoded_message))
+    elif message_format == "file":
+        extension = str(input("enter file extension:\n"))
+        make_file_from_steg_code(encoded_message, extension, start_image)
+        print("encrypted file written!")
 
-    decoded_message = decoded_message.split(separator, 1)[0]  # Uses separator to split decrypted text from junk output
-    print("the encoded message was:\n" + decoded_message)
 
+def make_file_from_steg_code(encoded_file, extension, destination_file):
+    length = len(encoded_file)
+    byte_list = [32,32,32]
+    for index in range(0, (length - 3), 4):  # Each character is stored across four pairs of bits, therefore
+        # incrementing in fours
+
+        # Initializes a variable to store the numerical value for the current character
+        byte = 0
+        byte += (encoded_file[index]) * 64
+        byte += (encoded_file[(index + 1)]) * 16
+        byte += (encoded_file[(index + 2)]) * 4
+        byte += (encoded_file[(index + 3)])
+        byte_list.append(byte)
+    # need to strip separator from byte_list "[69,79,70,69,79,70,69,79,70,69,79,70,69,79,70]"
+    str = ""  # Need better name
+    for byte in byte_list:
+        str += chr(byte)
+    str = str.split(separator, 1)[0]
+    eof_point = len(str)
+    byte_list = byte_list[:eof_point]
+    filename = ""
+    filename += destination_file[:-4]
+    filename += extension
+    with open(filename, "bw+") as f:
+        formatted_bytes = bytes(byte_list)
+        f.write(formatted_bytes)
+
+
+separator = "EOFEOFEOFEOFEOF"
 
 option = ""
 while option != "quit":  # Runs repetitively until user ends program
