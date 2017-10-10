@@ -1,3 +1,4 @@
+import time
 from PIL import Image
 
 
@@ -180,9 +181,13 @@ def steg_channel(zero_channel, steg_list, down_counter, width, height, counter):
 
 
 def encode():
+    start_time = time.clock()
     steg_list = []
     start_image = str(input("enter a .bmp or .png file to encode.\n"))
     red_chan, green_chan, blue_chan, width, height = image_reading(start_image)
+    current_time = time.clock()
+    print(str(start_time-current_time) + " seconds")
+    start_time = current_time
     data_to_be_hidden = str(input("Would you like to hide a message or a file?\n 'message' or 'file'\n"))
     if data_to_be_hidden == "message":
         steg_list = txt_to_steg_code(str(input("enter the message to encode into the image\nDO NOT use the enter key "
@@ -192,11 +197,17 @@ def encode():
         secret_file = str(input("Please enter a file path for the file you wish to hide:\n"))
         with open(secret_file, "rb") as f:
             steg_list = file_to_steg_code(f)
+    current_time = time.clock()
+    print(str(start_time - current_time) + " seconds")
+    start_time = current_time
     # Remove the two least significant bits from every pixel
     zero_red = return_two_lsbs_zeroed(red_chan, width, height)
     zero_blue = return_two_lsbs_zeroed(blue_chan, width, height)
     zero_green = return_two_lsbs_zeroed(green_chan, width, height)
     # Adds the encoding to each colour channel
+    current_time = time.clock()
+    print(str(start_time-current_time) + " seconds")
+    start_time = current_time
     steg_red, down_counter, counter = steg_channel(zero_red, steg_list, (len(steg_list)), width, height, 0)
     steg_green, down_counter, counter = steg_channel(zero_green, steg_list, down_counter, width, height, counter)
     steg_blue, down_counter, counter = steg_channel(zero_blue, steg_list, down_counter, width, height, counter)
@@ -204,6 +215,8 @@ def encode():
     write_image(start_image, steg_red, steg_green, steg_blue)
 
     print("Done!!\n\n\n")
+    current_time = time.clock()
+    print(str(start_time-current_time) + " seconds")
 
 
 def file_to_steg_code(file_content):
@@ -245,7 +258,7 @@ def steg_decode(long_steg_list):
 def decode():
     start_image = str(input("enter a .bmp or .png file to decode.\n"))
     message_format = str(input("Is the hidden data a message or a file?\n'message'\tor\t'file'\n"))
-    while message_format != "message" or message_format != "file":
+    while message_format != "message" and message_format != "file":
         message_format = str(input("Let's try again:\nIs the hidden data a message or a file?\n'message'\tor\t'file'\n"))
     red_chan, green_chan, blue_chan, width, height = image_reading(start_image)
     encoded_message = lsb_list(red_chan) + lsb_list(green_chan) + lsb_list(blue_chan)  # Reads encoded message into
